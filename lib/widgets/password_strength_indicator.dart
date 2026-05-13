@@ -32,11 +32,16 @@ class _PasswordStrengthIndicatorState extends State<PasswordStrengthIndicator>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _animation =
-        Tween<double>(begin: 0, end: widget.strengthPercentage).animate(
+    _animation = Tween<double>(
+      begin: 0,
+      end: widget.strengthPercentage,
+    ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    _animation.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -44,8 +49,10 @@ class _PasswordStrengthIndicatorState extends State<PasswordStrengthIndicator>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.strengthPercentage != widget.strengthPercentage) {
       _animationController.forward(from: 0);
-      _animation =
-          Tween<double>(begin: 0, end: widget.strengthPercentage).animate(
+      _animation = Tween<double>(
+        begin: 0,
+        end: widget.strengthPercentage,
+      ).animate(
         CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
       );
     }
@@ -121,9 +128,7 @@ class _PasswordStrengthIndicatorState extends State<PasswordStrengthIndicator>
               const SizedBox(width: 4),
               Text(
                 '(${(widget.strengthPercentage * 100).toStringAsFixed(0)}%)',
-                style: AppTheme.labelSmall.copyWith(
-                  color: AppTheme.textLight,
-                ),
+                style: AppTheme.labelSmall.copyWith(color: AppTheme.textLight),
               ),
             ],
           ),
@@ -161,11 +166,8 @@ class _RequirementItem extends StatelessWidget {
   final String label;
   final bool isMet;
 
-  const _RequirementItem({
-    Key? key,
-    required this.label,
-    required this.isMet,
-  }) : super(key: key);
+  const _RequirementItem({Key? key, required this.label, required this.isMet})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {

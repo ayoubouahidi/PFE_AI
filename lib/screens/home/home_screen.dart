@@ -113,7 +113,7 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icons.calendar_today_outlined,
                       title: 'Account Created',
                       subtitle:
-                          user?.metadata?.creationTime?.toString() ?? 'Unknown',
+                          user?.metadata.creationTime?.toString() ?? 'Unknown',
                       backgroundColor: Colors.blue.withValues(alpha: 0.1),
                     ),
 
@@ -124,7 +124,7 @@ class HomeScreen extends ConsumerWidget {
                       icon: Icons.login_outlined,
                       title: 'Last Sign In',
                       subtitle:
-                          user?.metadata?.lastSignInTime?.toString() ??
+                          user?.metadata.lastSignInTime?.toString() ??
                           'Unknown',
                       backgroundColor: Colors.purple.withValues(alpha: 0.1),
                     ),
