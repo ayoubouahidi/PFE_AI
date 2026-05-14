@@ -51,7 +51,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
+  bool _isSigningUp = false;
+
   void _handleSignUp() async {
+    if (_isSigningUp) return;
+
     // Validate all fields
     final registerFormNotifier = ref.read(registerFormProvider.notifier);
 
@@ -136,6 +140,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     // Proceed with sign up
+    setState(() {
+      _isSigningUp = true;
+    });
+
     try {
       await ref.read(
         emailPasswordSignUpProvider.call((
@@ -146,15 +154,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
 
       if (mounted) {
+        setState(() {
+          _isSigningUp = false;
+        });
         context.go('/home');
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _isSigningUp = false;
+        });
+        String errorMessage = e.toString();
+        if (errorMessage.contains('AuthException:')) {
+          errorMessage = errorMessage.replaceAll('AuthException: ', '');
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(errorMessage),
             backgroundColor: AppTheme.error,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -411,8 +429,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               CustomButton(
                 text: 'Sign Up',
                 onPressed: _handleSignUp,
-                isLoading: false,
-                isEnabled: true,
+                isLoading: _isSigningUp,
+                isEnabled: !_isSigningUp,
               ),
 
               const SizedBox(height: AppTheme.spacingMd),

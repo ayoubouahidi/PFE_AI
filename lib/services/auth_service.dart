@@ -125,6 +125,8 @@ class AuthService extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
+      debugPrint('[Auth] Starting sign up with email: $email');
+
       // Validate inputs
       if (email.isEmpty || password.isEmpty) {
         throw AuthException(message: 'Email and password are required.');
@@ -135,6 +137,7 @@ class AuthService extends ChangeNotifier {
       }
 
       // Create user with email and password
+      debugPrint('[Auth] Creating user account...');
       final UserCredential userCredential =
           await _firebaseAuth.createUserWithEmailAndPassword(
         email: email.trim(),
@@ -144,26 +147,33 @@ class AuthService extends ChangeNotifier {
       final User? user = userCredential.user;
 
       if (user != null) {
+        debugPrint('[Auth] User created successfully: ${user.uid}');
+        
         // Update user profile with display name if provided
         if (fullName != null && fullName.isNotEmpty) {
+          debugPrint('[Auth] Updating display name: $fullName');
           await user.updateDisplayName(fullName.trim());
         }
 
         // Send email verification
+        debugPrint('[Auth] Sending email verification...');
         await user.sendEmailVerification();
 
         _currentUser = user;
         _setLoading(false);
+        debugPrint('[Auth] Sign up completed successfully');
         return user;
       }
 
       throw AuthException(message: 'Failed to create user account.');
     } on FirebaseAuthException catch (e) {
+      debugPrint('[Auth] Firebase Auth Exception: ${e.code} - ${e.message}');
       final errorMessage = _handleAuthException(e);
       _setError(errorMessage);
       _setLoading(false);
       throw AuthException(message: errorMessage, code: e.code);
     } catch (e) {
+      debugPrint('[Auth] Sign up exception: $e');
       final errorMessage = e.toString();
       _setError(errorMessage);
       _setLoading(false);
