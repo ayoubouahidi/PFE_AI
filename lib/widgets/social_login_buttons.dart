@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import '../config/theme.dart';
 
 class SocialLoginButtons extends StatefulWidget {
   final VoidCallback? onGooglePressed;
-  final VoidCallback? onApplePressed;
   final bool isLoading;
-  final String? loadingFor; // 'google' or 'apple'
 
   const SocialLoginButtons({
     Key? key,
     this.onGooglePressed,
-    this.onApplePressed,
     this.isLoading = false,
-    this.loadingFor,
   }) : super(key: key);
 
   @override
@@ -23,8 +18,6 @@ class SocialLoginButtons extends StatefulWidget {
 class _SocialLoginButtonsState extends State<SocialLoginButtons> {
   @override
   Widget build(BuildContext context) {
-    final isAppleAvailable = Platform.isIOS || Platform.isMacOS;
-
     return Column(
       children: [
         // Divider with text
@@ -33,56 +26,32 @@ class _SocialLoginButtonsState extends State<SocialLoginButtons> {
           child: Row(
             children: [
               Expanded(
-                child: Container(
-                  height: 1,
-                  color: AppTheme.borderLight,
-                ),
+                child: Container(height: 1, color: AppTheme.borderLight),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
-                  'Or continue with',
+                  'Or continue with Google',
                   style: AppTheme.labelMedium.copyWith(
                     color: AppTheme.textLight,
                   ),
                 ),
               ),
               Expanded(
-                child: Container(
-                  height: 1,
-                  color: AppTheme.borderLight,
-                ),
+                child: Container(height: 1, color: AppTheme.borderLight),
               ),
             ],
           ),
         ),
 
-        // Social buttons row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Google Button
-            if (widget.onGooglePressed != null)
-              _SocialButton(
-                icon: Icons.g_mobiledata,
-                label: 'Google',
-                onPressed: widget.onGooglePressed!,
-                isLoading: widget.isLoading && widget.loadingFor == 'google',
-              ),
-
-            if (widget.onGooglePressed != null && isAppleAvailable)
-              const SizedBox(width: 16),
-
-            // Apple Button (iOS/macOS only)
-            if (isAppleAvailable && widget.onApplePressed != null)
-              _SocialButton(
-                icon: Icons.apple,
-                label: 'Apple',
-                onPressed: widget.onApplePressed!,
-                isLoading: widget.isLoading && widget.loadingFor == 'apple',
-              ),
-          ],
-        ),
+        // Google Button
+        if (widget.onGooglePressed != null)
+          _SocialButton(
+            icon: Icons.g_mobiledata,
+            label: 'Google',
+            onPressed: widget.onGooglePressed!,
+            isLoading: widget.isLoading,
+          ),
       ],
     );
   }
@@ -155,10 +124,7 @@ class _SocialButtonState extends State<_SocialButton>
           height: 56,
           decoration: BoxDecoration(
             color: Colors.white,
-            border: Border.all(
-              color: AppTheme.borderLight,
-              width: 1.5,
-            ),
+            border: Border.all(color: AppTheme.borderLight, width: 1.5),
             borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             boxShadow: [AppTheme.shadowSmall],
           ),
@@ -170,21 +136,19 @@ class _SocialButtonState extends State<_SocialButton>
               highlightColor: AppTheme.primary.withOpacity(0.1),
               splashColor: AppTheme.primary.withOpacity(0.2),
               child: Center(
-                child: widget.isLoading
-                    ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                        ),
-                      )
-                    : Icon(
-                        widget.icon,
-                        color: AppTheme.textDark,
-                        size: 28,
-                      ),
+                child:
+                    widget.isLoading
+                        ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppTheme.primary,
+                            ),
+                          ),
+                        )
+                        : Icon(widget.icon, color: AppTheme.textDark, size: 28),
               ),
             ),
           ),
