@@ -62,18 +62,6 @@ final googleSignUpProvider = FutureProvider<void>((ref) async {
   await authService.signUpWithGoogle();
 });
 
-// Apple Sign In
-final appleSignInProvider = FutureProvider<void>((ref) async {
-  final authService = ref.watch(authServiceProvider);
-  await authService.signInWithApple();
-});
-
-// Apple Sign Up
-final appleSignUpProvider = FutureProvider<void>((ref) async {
-  final authService = ref.watch(authServiceProvider);
-  await authService.signUpWithApple();
-});
-
 // Password Reset
 final passwordResetProvider = FutureProvider.family<void, String>((
   ref,
@@ -162,18 +150,6 @@ class AuthStateNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> signUpWithGoogle() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _authService.signUpWithGoogle());
-  }
-
-  /// Sign in with Apple
-  Future<void> signInWithApple() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _authService.signInWithApple());
-  }
-
-  /// Sign up with Apple
-  Future<void> signUpWithApple() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _authService.signUpWithApple());
   }
 
   /// Send password reset email

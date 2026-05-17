@@ -2,61 +2,64 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 
 class DefaultFirebaseOptions {
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    databaseURL: 'YOUR_DATABASE_URL',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
-    measurementId: 'YOUR_MEASUREMENT_ID',
+    apiKey: 'AIzaSyBxOQil7o96FTK6rD2Trjeg2sJ-3h0rIlc',
+    appId: '1:254238768355:web:a9d931abb0304f67d859d6',
+    messagingSenderId: '254238768355',
+    projectId: 'pfe---fhamni',
+    authDomain: 'pfe---fhamni.firebaseapp.com',
+    storageBucket: 'pfe---fhamni.firebasestorage.app',
+    measurementId: 'G-LZ2FJKKFF4',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'YOUR_DATABASE_URL',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBxOQil7o96FTK6rD2Trjeg2sJ-3h0rIlc',
+    appId: '1:254238768355:android:a9d931abb0304f67d859d6',
+    messagingSenderId: '254238768355',
+    projectId: 'pfe---fhamni',
+    databaseURL: 'https://pfe---fhamni.firebaseio.com',
+    storageBucket: 'pfe---fhamni.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'YOUR_DATABASE_URL',
-    iosBundleId: 'YOUR_IOS_BUNDLE_ID',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyArECVkcSFWMfTuclKvFxLdswyaZ3uofHs',
+    appId: '1:254238768355:ios:13e45abd71b8e111d859d6',
+    messagingSenderId: '254238768355',
+    projectId: 'pfe---fhamni',
+    storageBucket: 'pfe---fhamni.firebasestorage.app',
+    iosClientId:
+        '254238768355-efe9ja1uu3gaao0dv6k25l1vr61vg47q.apps.googleusercontent.com',
+    iosBundleId: 'com.example.pfeS6',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_MACOS_API_KEY',
-    appId: 'YOUR_MACOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'YOUR_DATABASE_URL',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyArECVkcSFWMfTuclKvFxLdswyaZ3uofHs',
+    appId: '1:254238768355:ios:13e45abd71b8e111d859d6',
+    messagingSenderId: '254238768355',
+    projectId: 'pfe---fhamni',
+    storageBucket: 'pfe---fhamni.firebasestorage.app',
+    iosClientId:
+        '254238768355-efe9ja1uu3gaao0dv6k25l1vr61vg47q.apps.googleusercontent.com',
+    iosBundleId: 'com.example.pfeS6',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'YOUR_WINDOWS_API_KEY',
-    appId: 'YOUR_WINDOWS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    databaseURL: 'YOUR_DATABASE_URL',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBxOQil7o96FTK6rD2Trjeg2sJ-3h0rIlc',
+    appId: '1:254238768355:web:1730c6e778f06ee9d859d6',
+    messagingSenderId: '254238768355',
+    projectId: 'pfe---fhamni',
+    authDomain: 'pfe---fhamni.firebaseapp.com',
+    storageBucket: 'pfe---fhamni.firebasestorage.app',
+    measurementId: 'G-YR4Y8ZBWDZ',
   );
 
   static const FirebaseOptions linux = FirebaseOptions(
-    apiKey: 'YOUR_LINUX_API_KEY',
-    appId: 'YOUR_LINUX_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    databaseURL: 'YOUR_DATABASE_URL',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyBxOQil7o96FTK6rD2Trjeg2sJ-3h0rIlc',
+    appId: '1:254238768355:web:a9d931abb0304f67d859d6',
+    messagingSenderId: '254238768355',
+    projectId: 'pfe---fhamni',
+    authDomain: 'pfe---fhamni.firebaseapp.com',
+    databaseURL: 'https://pfe---fhamni.firebaseio.com',
+    storageBucket: 'pfe---fhamni.firebasestorage.app',
   );
 
   static FirebaseOptions get currentPlatform {

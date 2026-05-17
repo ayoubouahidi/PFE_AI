@@ -17,11 +17,6 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  late TextEditingController _fullNameController;
-  late TextEditingController _emailController;
-  late TextEditingController _passwordController;
-  late TextEditingController _confirmPasswordController;
-
   final FocusNode _fullNameFocus = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
@@ -32,18 +27,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    _fullNameController = TextEditingController();
-    _emailController = TextEditingController();
-    _passwordController = TextEditingController();
-    _confirmPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
     _fullNameFocus.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
@@ -56,37 +43,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   void _handleSignUp() async {
     if (_isSigningUp) return;
 
-    // Validate all fields
-    final registerFormNotifier = ref.read(registerFormProvider.notifier);
+    final registerForm = ref.read(registerFormProvider);
 
-    // Validate full name
-    final fullNameError = FormValidator.validateFullName(
-      _fullNameController.text,
-    );
-    registerFormNotifier.updateFullName(_fullNameController.text);
-
-    // Validate email
-    final emailError = FormValidator.validateEmail(_emailController.text);
-    registerFormNotifier.updateEmail(_emailController.text);
-
-    // Validate password
-    final passwordError = FormValidator.validatePassword(
-      _passwordController.text,
-    );
-    registerFormNotifier.updatePassword(_passwordController.text);
-
-    // Validate confirm password
-    final confirmPasswordError = FormValidator.validatePasswordConfirmation(
-      _passwordController.text,
-      _confirmPasswordController.text,
-    );
-    registerFormNotifier.updateConfirmPassword(_confirmPasswordController.text);
-
-    // Check if form has errors
-    if (fullNameError != null) {
+    // Check if all fields are valid
+    if (!registerForm.fullNameField.isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(fullNameError),
+          content: Text(
+            registerForm.fullNameField.errorMessage ?? 'Invalid full name',
+          ),
           backgroundColor: AppTheme.error,
           duration: const Duration(seconds: 3),
         ),
@@ -94,10 +59,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    if (emailError != null) {
+    if (!registerForm.emailField.isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(emailError),
+          content: Text(
+            registerForm.emailField.errorMessage ?? 'Invalid email',
+          ),
           backgroundColor: AppTheme.error,
           duration: const Duration(seconds: 3),
         ),
@@ -105,10 +72,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    if (passwordError != null) {
+    if (!registerForm.passwordField.isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(passwordError),
+          content: Text(
+            registerForm.passwordField.errorMessage ?? 'Invalid password',
+          ),
           backgroundColor: AppTheme.error,
           duration: const Duration(seconds: 3),
         ),
@@ -116,10 +85,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    if (confirmPasswordError != null) {
+    if (!registerForm.confirmPasswordField.isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(confirmPasswordError),
+          content: Text(
+            registerForm.confirmPasswordField.errorMessage ??
+                'Passwords do not match',
+          ),
           backgroundColor: AppTheme.error,
           duration: const Duration(seconds: 3),
         ),
@@ -147,9 +119,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       await ref.read(
         emailPasswordSignUpProvider.call((
-          _emailController.text.trim(),
-          _passwordController.text,
-          _fullNameController.text.trim(),
+          registerForm.emailField.value.trim(),
+          registerForm.passwordField.value,
+          registerForm.fullNameField.value.trim(),
         )).future,
       );
 
@@ -198,25 +170,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  void _handleAppleSignUp() async {
-    try {
-      await ref.read(appleSignUpProvider.future);
-      if (mounted) {
-        context.go('/home');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: AppTheme.error,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
-
   void _handleLoginNavigation() {
     context.go('/login');
   }
@@ -225,7 +178,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final registerForm = ref.watch(registerFormProvider);
     final passwordStrength = FormValidator.calculatePasswordStrength(
-      _passwordController.text,
+      registerForm.passwordField.value,
     );
 
     return Scaffold(
@@ -330,7 +283,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 value: registerForm.passwordField.value,
                 onChanged: (value) {
                   ref.read(registerFormProvider.notifier).updatePassword(value);
-                  _passwordController.text = value;
                 },
                 error:
                     registerForm.passwordField.isTouched
@@ -474,7 +426,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               // Social Sign Up Buttons
               SocialLoginButtons(
                 onGooglePressed: _handleGoogleSignUp,
-                onApplePressed: _handleAppleSignUp,
                 isLoading: false,
               ),
 

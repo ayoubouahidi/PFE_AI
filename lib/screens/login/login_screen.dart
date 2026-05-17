@@ -109,22 +109,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _handleAppleLogin() async {
-    try {
-      await ref.read(appleSignInProvider.future);
-      if (!mounted) return;
-      context.go('/home');
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Apple Sign-In failed: $e'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
-    }
-  }
-
   void _handleForgotPassword() {
     context.push('/forgot-password');
   }
@@ -340,7 +324,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // Social Login Buttons
               SocialLoginButtons(
                 onGooglePressed: _handleGoogleLogin,
-                onApplePressed: _handleAppleLogin,
                 isLoading: false,
               ),
 

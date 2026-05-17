@@ -1,17 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 
 /// Custom Exception Classes
 class AuthException implements Exception {
   final String message;
   final String? code;
 
-  AuthException({
-    required this.message,
-    this.code,
-  });
+  AuthException({required this.message, this.code});
 
   @override
   String toString() => 'AuthException: $message';
@@ -21,13 +18,13 @@ class AuthException implements Exception {
 /// Handles all Firebase authentication operations including:
 /// - Email/Password sign up and login
 /// - Google Sign-In
-/// - Apple Sign-In
 /// - Password reset
 /// - Logout
 /// - User session management
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  late StreamSubscription<User?> _authSubscription;
 
   // Private variables
   User? _currentUser;
@@ -51,22 +48,34 @@ class AuthService extends ChangeNotifier {
 
   /// Initialize authentication state listener
   void _initializeAuthStateListener() {
-    _firebaseAuth.authStateChanges().listen((User? user) {
-      _currentUser = user;
-      notifyListeners();
+    _authSubscription = _firebaseAuth.authStateChanges().listen((User? user) {
+      if (_currentUser != user) {
+        _currentUser = user;
+        notifyListeners();
+      }
     });
   }
 
-  /// Set loading state and notify listeners
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
   }
 
-  /// Set error message
+  /// Set loading state (only notify if value actually changed)
+  void _setLoading(bool value) {
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyListeners();
+    }
+  }
+
+  /// Set error message (only notify if error actually changed)
   void _setError(String? error) {
-    _errorMessage = error;
-    notifyListeners();
+    if (_errorMessage != error) {
+      _errorMessage = error;
+      notifyListeners();
+    }
   }
 
   /// Clear error message
@@ -109,12 +118,12 @@ class AuthService extends ChangeNotifier {
   // ==================== EMAIL/PASSWORD AUTHENTICATION ====================
 
   /// Sign up with email and password
-  /// 
+  ///
   /// Parameters:
   /// - [email]: User's email address
   /// - [password]: User's password (min 8 characters recommended)
   /// - [fullName]: User's full name (optional)
-  /// 
+  ///
   /// Returns: User object if successful, throws AuthException on failure
   Future<User?> signUpWithEmail({
     required String email,
@@ -133,22 +142,24 @@ class AuthService extends ChangeNotifier {
       }
 
       if (password.length < 8) {
-        throw AuthException(message: 'Password must be at least 8 characters long.');
+        throw AuthException(
+          message: 'Password must be at least 8 characters long.',
+        );
       }
 
       // Create user with email and password
       debugPrint('[Auth] Creating user account...');
-      final UserCredential userCredential =
-          await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
+      final UserCredential userCredential = await _firebaseAuth
+          .createUserWithEmailAndPassword(
+            email: email.trim(),
+            password: password,
+          );
 
       final User? user = userCredential.user;
 
       if (user != null) {
         debugPrint('[Auth] User created successfully: ${user.uid}');
-        
+
         // Update user profile with display name if provided
         if (fullName != null && fullName.isNotEmpty) {
           debugPrint('[Auth] Updating display name: $fullName');
@@ -182,11 +193,11 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Sign in with email and password
-  /// 
+  ///
   /// Parameters:
   /// - [email]: User's email address
   /// - [password]: User's password
-  /// 
+  ///
   /// Returns: User object if successful, throws AuthException on failure
   Future<User?> signInWithEmail({
     required String email,
@@ -201,11 +212,8 @@ class AuthService extends ChangeNotifier {
         throw AuthException(message: 'Email and password are required.');
       }
 
-      final UserCredential userCredential =
-          await _firebaseAuth.signInWithEmailAndPassword(
-        email: email.trim(),
-        password: password,
-      );
+      final UserCredential userCredential = await _firebaseAuth
+          .signInWithEmailAndPassword(email: email.trim(), password: password);
 
       final User? user = userCredential.user;
 
@@ -232,7 +240,7 @@ class AuthService extends ChangeNotifier {
   // ==================== GOOGLE SIGN-IN ====================
 
   /// Sign in with Google
-  /// 
+  ///
   /// Returns: User object if successful, throws AuthException on failure
   Future<User?> signInWithGoogle() async {
     try {
@@ -259,8 +267,8 @@ class AuthService extends ChangeNotifier {
       );
 
       // Sign in to Firebase with Google credentials
-      final UserCredential userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
+      final UserCredential userCredential = await _firebaseAuth
+          .signInWithCredential(credential);
 
       final User? user = userCredential.user;
 
@@ -285,7 +293,7 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Sign up with Google
-  /// 
+  ///
   /// Returns: User object if successful, throws AuthException on failure
   Future<User?> signUpWithGoogle() async {
     // Google sign-up is handled the same as sign-in
@@ -293,92 +301,13 @@ class AuthService extends ChangeNotifier {
     return signInWithGoogle();
   }
 
-  // ==================== APPLE SIGN-IN ====================
-
-  /// Sign in with Apple (iOS only)
-  /// 
-  /// Returns: User object if successful, throws AuthException on failure
-  Future<User?> signInWithApple() async {
-    try {
-      _setLoading(true);
-      _clearError();
-
-      final AuthorizationCredentialAppleID appleCredential =
-          await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-
-      // Create OAuthCredential with Apple sign-in
-      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
-      final AuthCredential credential = oAuthProvider.credential(
-        idToken: appleCredential.identityToken,
-        accessToken: appleCredential.authorizationCode,
-      );
-
-      // Sign in to Firebase with Apple credentials
-      final UserCredential userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
-
-      final User? user = userCredential.user;
-
-      if (user != null) {
-        // Update display name if available
-        if ((appleCredential.givenName ?? '').isNotEmpty ||
-            (appleCredential.familyName ?? '').isNotEmpty) {
-          final displayName =
-              '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'
-                  .trim();
-          if (displayName.isNotEmpty) {
-            await user.updateDisplayName(displayName);
-          }
-        }
-
-        _currentUser = user;
-        _setLoading(false);
-        return user;
-      }
-
-      throw AuthException(message: 'Failed to sign in with Apple.');
-    } on SignInWithAppleAuthorizationException catch (e) {
-      if (e.code == AuthorizationErrorCode.canceled) {
-        _setError('Apple sign in cancelled by user.');
-      } else {
-        _setError('Apple sign in failed: ${e.message}');
-      }
-      _setLoading(false);
-      throw AuthException(message: _errorMessage ?? 'Apple sign in failed.');
-    } on FirebaseAuthException catch (e) {
-      final errorMessage = _handleAuthException(e);
-      _setError(errorMessage);
-      _setLoading(false);
-      throw AuthException(message: errorMessage, code: e.code);
-    } catch (e) {
-      final errorMessage = e.toString();
-      _setError(errorMessage);
-      _setLoading(false);
-      throw AuthException(message: errorMessage);
-    }
-  }
-
-  /// Sign up with Apple (iOS only)
-  /// 
-  /// Returns: User object if successful, throws AuthException on failure
-  Future<User?> signUpWithApple() async {
-    // Apple sign-up is handled the same as sign-in
-    // Firebase creates a new user if the email doesn't exist
-    return signInWithApple();
-  }
-
   // ==================== PASSWORD MANAGEMENT ====================
 
   /// Send password reset email
-  /// 
+  ///
   /// Parameters:
   /// - [email]: User's email address
-  /// 
+  ///
   /// Throws AuthException on failure
   Future<void> sendPasswordResetEmail(String email) async {
     try {
@@ -406,10 +335,10 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Update password for current user
-  /// 
+  ///
   /// Parameters:
   /// - [newPassword]: New password for the user
-  /// 
+  ///
   /// Note: User must have recently logged in
   /// Throws AuthException on failure
   Future<void> updatePassword(String newPassword) async {
@@ -423,7 +352,8 @@ class AuthService extends ChangeNotifier {
 
       if (newPassword.length < 8) {
         throw AuthException(
-            message: 'Password must be at least 8 characters long.');
+          message: 'Password must be at least 8 characters long.',
+        );
       }
 
       if (_currentUser == null) {
@@ -447,10 +377,10 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Update email for current user
-  /// 
+  ///
   /// Parameters:
   /// - [newEmail]: New email address for the user
-  /// 
+  ///
   /// Note: User must have recently logged in
   /// Throws AuthException on failure
   Future<void> updateEmail(String newEmail) async {
@@ -485,7 +415,7 @@ class AuthService extends ChangeNotifier {
   // ==================== EMAIL VERIFICATION ====================
 
   /// Send email verification
-  /// 
+  ///
   /// Throws AuthException on failure
   Future<void> sendEmailVerification() async {
     try {
@@ -513,7 +443,7 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Check if email is verified
-  /// 
+  ///
   /// Returns: true if email is verified, false otherwise
   Future<bool> checkEmailVerified() async {
     try {
@@ -528,10 +458,10 @@ class AuthService extends ChangeNotifier {
   // ==================== USER PROFILE MANAGEMENT ====================
 
   /// Update user display name
-  /// 
+  ///
   /// Parameters:
   /// - [displayName]: New display name for the user
-  /// 
+  ///
   /// Throws AuthException on failure
   Future<void> updateDisplayName(String displayName) async {
     try {
@@ -565,10 +495,10 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Update user profile photo
-  /// 
+  ///
   /// Parameters:
   /// - [photoUrl]: URL of the new profile photo
-  /// 
+  ///
   /// Throws AuthException on failure
   Future<void> updatePhotoUrl(String photoUrl) async {
     try {
@@ -602,7 +532,7 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Reload user data from Firebase
-  /// 
+  ///
   /// Throws AuthException on failure
   Future<void> reloadUser() async {
     try {
@@ -627,7 +557,7 @@ class AuthService extends ChangeNotifier {
   // ==================== SESSION MANAGEMENT ====================
 
   /// Sign out current user
-  /// 
+  ///
   /// Also signs out from Google and clears all session data
   /// Throws AuthException on failure
   Future<void> signOut() async {
@@ -653,7 +583,7 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Delete current user account
-  /// 
+  ///
   /// Note: User must have recently logged in
   /// Throws AuthException on failure
   Future<void> deleteAccount() async {
@@ -685,28 +615,23 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Check if user session is still active
-  /// 
+  ///
   /// Returns: true if user is authenticated, false otherwise
   bool isSessionActive() {
     return _firebaseAuth.currentUser != null;
   }
 
   /// Get current user authentication state stream
-  /// 
+  ///
   /// Returns: Stream of User? that emits when auth state changes
   Stream<User?> get authStateStream => _firebaseAuth.authStateChanges();
 
   /// Get current user ID token stream
-  /// 
+  ///
   /// Returns: Stream of ID tokens
   Stream<String?> get idTokenStream =>
       _firebaseAuth.idTokenChanges().asyncMap((user) async {
         if (user == null) return null;
         return await user.getIdToken();
       });
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
